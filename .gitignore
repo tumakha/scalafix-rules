@@ -1,3 +1,6 @@
+.idea
+scalafix/project/project
+scalafix/project/target
 *.class
 *.tasty
 *.log
