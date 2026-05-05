@@ -49,13 +49,18 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
     val closeBracePatch =
       tokens.reverse.collectFirst { case t: Token.RightBrace => t } match {
         case Some(rbrace) =>
-          val line = rbrace.pos.startLine
+          val idx = tokens.indexOf(rbrace)
 
-          val lineTokens = tokens.filter(t =>
-            t.pos.startLine == line
-          )
+          val nextToken = tokens.lift(idx + 1)
 
-          Patch.removeTokens(lineTokens)
+          val removeClose = Patch.removeToken(rbrace)
+
+          val removeNewline =
+            nextToken.collect {
+              case t: Token.LF => Patch.removeToken(t)
+            }.getOrElse(Patch.empty)
+
+          removeClose + removeNewline
 
         case None =>
           Patch.empty
