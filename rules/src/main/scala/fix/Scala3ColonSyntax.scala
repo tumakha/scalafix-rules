@@ -1,7 +1,9 @@
 package fix
 
 import scalafix.v1._
+
 import scala.meta._
+import scala.meta.contrib.XtensionTreeOps
 
 /**
  * Scala 3 colon syntax rewrite rule.
@@ -21,38 +23,22 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
   /**
    * Detect forbidden constructs inside template
    */
-  private def containsForbiddenStats(templ: Template): Boolean = {
+  private def containsForbiddenStats(templ: Template): Boolean =
     templ.stats.exists { stat =>
       stat.exists {
-        // 🚫 string literals & interpolations
         case _: Lit.String       => true
         case _: Term.Interpolate => true
-
-        // 🚫 method implementations
-        case _: Defn.Def => true
-
-        // 🚫 imports
-        case _: Import => true
-
-        // 🚫 match expressions
-        case _: Term.Match => true
-
-        // 🚫 map / flatMap (common FP chains)
+        case _: Defn.Def         => true
+        case _: Import           => true
+        case _: Term.Match       => true
         case Term.Apply(Term.Select(_, name), _)
           if name.value == "map" || name.value == "flatMap" =>
           true
-
-        // 🚫 async / block-style calls (e.g. Action.async { ... })
         case Term.Apply(_, args) =>
-          args.exists {
-            case _: Term.Block => true
-            case _             => false
-          }
-
+          args.exists(_.isInstanceOf[Term.Block])
         case _ => false
       }
     }
-  }
 
   private def rewriteTemplate(templ: Template)(implicit doc: SemanticDocument): Patch = {
 
