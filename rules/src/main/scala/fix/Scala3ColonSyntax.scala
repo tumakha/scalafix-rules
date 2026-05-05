@@ -12,13 +12,12 @@ import scala.meta.contrib.XtensionTreeOps
  */
 class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
 
-  override def fix(implicit doc: SemanticDocument): Patch = {
+  override def fix(implicit doc: SemanticDocument): Patch =
     doc.tree.collect {
       case cls: Defn.Class  => rewriteTemplate(cls.templ)
       case obj: Defn.Object => rewriteTemplate(obj.templ)
       case trt: Defn.Trait  => rewriteTemplate(trt.templ)
     }.asPatch
-  }
 
   /**
    * Detect forbidden constructs inside template
@@ -28,7 +27,6 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
       stat.exists {
         case _: Lit.String       => true
         case _: Term.Interpolate => true
-        case _: Defn.Def         => true
         case _: Import           => true
         case _: Term.Match       => true
         case Term.Apply(Term.Select(_, name), _)
@@ -44,7 +42,6 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
 
     if (templ.stats.isEmpty) return Patch.empty
 
-    // 🚫 Skip unsafe templates
     if (containsForbiddenStats(templ)) return Patch.empty
 
     val tokens = templ.tokens
