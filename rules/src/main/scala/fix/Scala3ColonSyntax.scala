@@ -10,10 +10,28 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
 
   override def fix(implicit doc: SemanticDocument): Patch = {
     doc.tree.collect {
-      case cls: Defn.Class  => rewriteTemplate(cls.templ)
-      case obj: Defn.Object => rewriteTemplate(obj.templ)
-      case trt: Defn.Trait  => rewriteTemplate(trt.templ)
+      case cls: Defn.Class if isTopLevel(cls) && hasSameLineBrace(cls.templ, cls) =>
+        rewriteTemplate(cls.templ)
+
+      case obj: Defn.Object if isTopLevel(obj) && hasSameLineBrace(obj.templ, obj) =>
+        rewriteTemplate(obj.templ)
+
+      case trt: Defn.Trait if isTopLevel(trt) && hasSameLineBrace(trt.templ, trt) =>
+        rewriteTemplate(trt.templ)
     }.asPatch
+  }
+
+  private def isTopLevel(tree: Tree): Boolean =
+    tree.parent.exists(_.is[Source])
+
+  private def hasSameLineBrace(templ: Template, owner: Tree): Boolean = {
+    val braceOpt = templ.tokens.collectFirst { case t: Token.LeftBrace => t }
+
+    braceOpt.exists { brace =>
+      val ownerEndLine = owner.pos.endLine
+      val braceLine    = brace.pos.startLine
+      ownerEndLine == braceLine
+    }
   }
 
   private def isInsideForbiddenContext(tree: Tree): Boolean = {
@@ -21,10 +39,10 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
       t.parent match {
         case Some(parent) =>
           parent match {
-            case _: Lit.String        => true
-            case _: Term.Interpolate  => true
-            case _: Term.Match        => true
-            case _                    => loop(parent)
+            case _: Lit.String       => true
+            case _: Term.Interpolate => true
+            case _: Term.Match       => true
+            case _                   => loop(parent)
           }
         case None => false
       }
@@ -68,4 +86,5 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
 
     openBracePatch + closeBracePatch
   }
+
 }
