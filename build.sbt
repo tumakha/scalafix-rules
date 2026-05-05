@@ -5,7 +5,7 @@ lazy val scala3Version = "3.6.3"
 
 inThisBuild(
   List(
-    organization := "com.example",
+    organization := "uk.tumakha",
     homepage := Some(url("https://github.com/com/example")),
     licenses := List(
       "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")

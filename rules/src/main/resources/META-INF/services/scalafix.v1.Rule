@@ -1,1 +1,5 @@
 fix.ScalafixRules
+fix.ImplicitToUsing
+fix.Scala3ColonSyntax
+fix.SingleTrailingEmptyLine
+fix.WildcardImports
