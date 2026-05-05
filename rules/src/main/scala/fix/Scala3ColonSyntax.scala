@@ -16,9 +16,28 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
     }.asPatch
   }
 
+  private def isInsideForbiddenContext(tree: Tree): Boolean = {
+    def loop(t: Tree): Boolean = {
+      t.parent match {
+        case Some(parent) =>
+          parent match {
+            case _: Lit.String        => true
+            case _: Term.Interpolate  => true
+            case _: Term.Match        => true
+            case _                    => loop(parent)
+          }
+        case None => false
+      }
+    }
+    loop(tree)
+  }
+
   private def rewriteTemplate(templ: Template)(implicit doc: SemanticDocument): Patch = {
-    // Skip templates with no stats (e.g. `class Foo`)
+
     if (templ.stats.isEmpty) return Patch.empty
+
+    // 🚫 Skip unsafe contexts
+    if (isInsideForbiddenContext(templ)) return Patch.empty
 
     val tokens = templ.tokens
 
@@ -28,9 +47,19 @@ class Scala3ColonSyntax extends SemanticRule("Scala3ColonSyntax") {
         .getOrElse(Patch.empty)
 
     val closeBracePatch =
-      tokens.reverse.collectFirst { case t: Token.RightBrace => t }
-        .map(Patch.removeToken)
-        .getOrElse(Patch.empty)
+      tokens.reverse.collectFirst { case t: Token.RightBrace => t } match {
+        case Some(rbrace) =>
+          val line = rbrace.pos.startLine
+
+          val lineTokens = tokens.filter(t =>
+            t.pos.startLine == line
+          )
+
+          Patch.removeTokens(lineTokens)
+
+        case None =>
+          Patch.empty
+      }
 
     openBracePatch + closeBracePatch
   }
