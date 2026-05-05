@@ -1,21 +1,21 @@
 lazy val V = _root_.scalafix.sbt.BuildInfo
 
-lazy val rulesCrossVersions = Seq(V.scala213, V.scala212)
-lazy val scala3Version = "3.6.3"
+lazy val rulesCrossVersions = Seq(V.scala213)
+lazy val scala3Version = "3.8.3"
 
 inThisBuild(
   List(
     organization := "uk.tumakha",
-    homepage := Some(url("https://github.com/com/example")),
+    homepage := Some(url("https://github.com/tumakha/scalafix-rules")),
     licenses := List(
       "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")
     ),
     developers := List(
       Developer(
-        "example-username",
-        "Example Full Name",
-        "example@email.com",
-        url("https://example.com")
+        "yuriy-tumakha",
+        "Yuriy Tumakha",
+        "tumakha@gmail.com",
+        url("https://tumakha.uk")
       )
     ),
     semanticdbEnabled := true,
@@ -84,18 +84,13 @@ lazy val tests = projectMatrix
     rulesCrossVersions.map(VirtualAxis.scalaABIVersion) :+ VirtualAxis.jvm: _*
   )
   .jvmPlatform(
-    scalaVersions = Seq(V.scala212),
+    scalaVersions = Seq(V.scala213),
     axisValues = Seq(TargetAxis(scala3Version)),
     settings = Seq()
   )
   .jvmPlatform(
     scalaVersions = Seq(V.scala213),
     axisValues = Seq(TargetAxis(V.scala213)),
-    settings = Seq()
-  )
-  .jvmPlatform(
-    scalaVersions = Seq(V.scala212),
-    axisValues = Seq(TargetAxis(V.scala212)),
     settings = Seq()
   )
   .dependsOn(rules)
