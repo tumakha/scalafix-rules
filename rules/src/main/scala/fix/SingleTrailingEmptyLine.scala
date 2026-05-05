@@ -27,10 +27,8 @@ class SingleTrailingEmptyLine
     val trimmed = input.replaceAll("[\\s\\n\\r]+$", "")
 
     // Rebuild file with exactly one empty line at end
-    // Final shape = content + "\n\n"
-    val rewritten =
-      if (trimmed.isEmpty) "\n"
-      else trimmed + "\n"
+    // Final shape = content + "\n"
+    val rewritten = trimmed + "\n"
 
     if (rewritten == input) Patch.empty
     else Patch.replaceTree(doc.tree, rewritten)
