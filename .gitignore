@@ -1,6 +1,9 @@
 .idea
-scalafix/project/project
-scalafix/project/target
+.bsp
+.sbt
+target
+project/project
+project/target
 *.class
 *.tasty
 *.log
