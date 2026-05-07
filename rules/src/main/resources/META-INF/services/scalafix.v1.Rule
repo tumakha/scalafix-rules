@@ -4,4 +4,4 @@ fix.Scala3ColonSyntax
 fix.BracesToIndentation
 fix.RemoveRedundantBraces
 fix.SingleTrailingEmptyLine
-fix.WildcardImports
+fix.Scala3ImportWildcards
